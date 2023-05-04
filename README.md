@@ -51,6 +51,7 @@ Options:
   -T  Content-type, defaults to "text/html".
   -a  Basic authentication, username:password.
   -x  HTTP Proxy address as host:port.
+  -i  Specify an Interface outbound proxy.
   -h2 Enable HTTP/2.
 
   -host	HTTP Host header.
