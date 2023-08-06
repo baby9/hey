@@ -16,10 +16,12 @@
 package requester
 
 import (
+	"fmt"
 	"bytes"
 	"crypto/tls"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
@@ -33,6 +35,8 @@ import (
 // Max size of the buffer of result channel.
 const maxResult = 1000000
 const maxIdleConn = 500
+
+var InterfaceAddr net.IP
 
 type result struct {
 	err           error
@@ -98,6 +102,28 @@ type Work struct {
 	start    time.Duration
 
 	report *report
+}
+
+func GetInterfaceAddr(ifaceName string) (string, error) {
+    iface, err := net.InterfaceByName(ifaceName)
+    if err != nil {
+        return "", err
+    }
+    addrs, err := iface.Addrs()
+    if err != nil {
+        return "", err
+    }
+
+    for _, addr := range addrs {
+        if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
+            InterfaceAddr = ipnet.IP
+            break
+        }
+    }
+    if InterfaceAddr == nil {
+        return "", fmt.Errorf("no IP address found for interface %s", ifaceName)
+    }
+	return "", nil
 }
 
 func (b *Work) writer() io.Writer {
@@ -206,6 +232,7 @@ func (b *Work) makeRequest(c *http.Client) {
 	}
 }
 
+
 func (b *Work) runWorker(client *http.Client, n int) {
 	var throttle <-chan time.Time
 	if b.QPS > 0 {
@@ -232,8 +259,17 @@ func (b *Work) runWorker(client *http.Client, n int) {
 }
 
 func (b *Work) runWorkers() {
+
 	var wg sync.WaitGroup
 	wg.Add(b.C)
+
+	localAddr := &net.TCPAddr{
+        IP:   InterfaceAddr,
+        Port: 0,
+    }
+	dialer := &net.Dialer{
+        LocalAddr: localAddr,
+    }
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -244,7 +280,8 @@ func (b *Work) runWorkers() {
 		DisableCompression:  b.DisableCompression,
 		DisableKeepAlives:   b.DisableKeepAlives,
 		Proxy:               http.ProxyURL(b.ProxyAddr),
-	}
+		Dial:                dialer.Dial,
+	}	
 	if b.H2 {
 		http2.ConfigureTransport(tr)
 	} else {

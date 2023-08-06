@@ -11,9 +11,9 @@ To preserve the name for its original owner, we renamed this project to hey.
 
 ## Installation
 
-* Linux 64-bit: https://hey-release.s3.us-east-2.amazonaws.com/hey_linux_amd64
-* Mac 64-bit: https://hey-release.s3.us-east-2.amazonaws.com/hey_darwin_amd64
-* Windows 64-bit: https://hey-release.s3.us-east-2.amazonaws.com/hey_windows_amd64
+* Linux 64-bit: https://github.com/baby9/hey/releases/download/v1.0/hey_linux_amd64
+* Mac 64-bit: https://github.com/baby9/hey/releases/download/v1.0/hey_darwin_amd64
+* Windows 64-bit: https://github.com/baby9/hey/releases/download/v1.0/hey_windows_amd64
 
 ### Package Managers
 
@@ -51,6 +51,7 @@ Options:
   -T  Content-type, defaults to "text/html".
   -a  Basic authentication, username:password.
   -x  HTTP Proxy address as host:port.
+  -i  Specify an Interface outgoing proxy.
   -h2 Enable HTTP/2.
 
   -host	HTTP Host header.

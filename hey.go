@@ -29,13 +29,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rakyll/hey/requester"
+	"github.com/baby9/hey/requester"
 )
 
 const (
 	headerRegexp = `^([\w-]+):\s*(.+)`
 	authRegexp   = `^(.+):([^\s].+)`
-	heyUA        = "hey/0.0.1"
+	heyUA        = "Mozilla/5.0"
 )
 
 var (
@@ -64,6 +64,7 @@ var (
 	disableKeepAlives  = flag.Bool("disable-keepalive", false, "")
 	disableRedirects   = flag.Bool("disable-redirects", false, "")
 	proxyAddr          = flag.String("x", "", "")
+	interfaceName      = flag.String("i", "", "")
 )
 
 var usage = `Usage: hey [options...] <url>
@@ -91,6 +92,7 @@ Options:
   -U  User-Agent, defaults to version "hey/0.0.1".
   -a  Basic authentication, username:password.
   -x  HTTP Proxy address as host:port.
+  -i  Specify an Interface outbound proxy.
   -h2 Enable HTTP/2.
 
   -host	HTTP Host header.
@@ -189,6 +191,10 @@ func main() {
 		if err != nil {
 			usageAndExit(err.Error())
 		}
+	}
+
+	if *interfaceName != "" {
+		requester.GetInterfaceAddr(*interfaceName)
 	}
 
 	req, err := http.NewRequest(method, url, nil)
